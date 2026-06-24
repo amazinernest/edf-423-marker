@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EDF 423 Auto Marker — University of Lagos</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f7f6f3;--surface:#fff;--s2:#f0efe9;
+  --border:#e2e0d8;--bstrong:#c8c6bc;
+  --text:#1a1a18;--muted:#6b6960;--hint:#9b9890;
+  --blue:#1a5fb4;--bluebg:#e8f0fc;
+  --green:#0a6b3e;--greenbg:#e3f5ed;
+  --purple:#5c3d9e;--purplebg:#eeebfc;
+  --red:#a02020;--redbg:#fceaea;
+  --amber:#7a4d00;--amberbg:#fef3dc;
+  --orange:#c45000;--orangebg:#fff0e6;
+  --r:10px;--rs:6px;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;min-height:100vh}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100}
+.hlogo{width:36px;height:36px;background:var(--blue);border-radius:var(--rs);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;flex-shrink:0}
+.htitle{font-size:14px;font-weight:600}.hsub{font-size:11px;color:var(--muted)}
+.hright{margin-left:auto;display:flex;gap:8px;align-items:center}
+.pill{font-size:11px;background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;color:var(--muted);display:none}
+main{max-width:900px;margin:0 auto;padding:26px 18px 60px}
+.step{display:none}.step.active{display:block}
+
+.upload-zone{border:2px dashed var(--bstrong);border-radius:var(--r);padding:42px 26px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;background:var(--surface)}
+.upload-zone:hover,.upload-zone.drag-over{border-color:var(--blue);background:var(--bluebg)}
+.upload-zone i{font-size:34px;color:var(--hint);display:block;margin-bottom:10px}
+.upload-zone h3{font-size:15px;font-weight:600;margin-bottom:4px}
+.upload-zone p{font-size:13px;color:var(--muted)}
+.upload-zone input{display:none}
+.divider{display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--hint);font-size:13px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;margin-bottom:13px}
+.card-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:11px}
+.sname{font-size:16px;font-weight:600}.smeta{font-size:12px;color:var(--muted);margin-top:2px}
+.badge{font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.bq1{background:var(--bluebg);color:var(--blue)}.bq2{background:var(--greenbg);color:var(--green)}.bq3{background:var(--purplebg);color:var(--purple)}
+.rlbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--hint);margin-bottom:5px}
+.resp-box{background:var(--s2);border-radius:var(--rs);padding:10px 12px;font-size:13px;line-height:1.7;color:var(--muted);max-height:160px;overflow-y:auto;white-space:pre-wrap;margin-bottom:14px;border:1px solid var(--border)}
+.sec-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--hint);margin-bottom:10px}
+
+/* Rubric row */
+.rubric-row{padding:10px 0;border-bottom:1px solid var(--border)}
+.rubric-row:last-of-type{border-bottom:none}
+.rrow-top{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start;margin-bottom:6px}
+.rlabel{font-size:13px;line-height:1.5}
+.rmax{font-size:12px;color:var(--hint);padding-top:3px;white-space:nowrap}
+/* Auto score hint */
+.auto-hint{font-size:11px;border-radius:var(--rs);padding:6px 10px;margin-bottom:6px;line-height:1.5}
+.hint-good{background:var(--greenbg);border:1px solid #80d0a8;color:var(--green)}
+.hint-partial{background:var(--amberbg);border:1px solid #e8c060;color:var(--amber)}
+.hint-weak{background:var(--redbg);border:1px solid #f0a0a0;color:var(--red)}
+/* keyword chips */
+.kchips{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
+.kchip{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:500}
+.kfound{background:var(--greenbg);color:var(--green)}.kmissing{background:var(--redbg);color:var(--red)}
+/* Score controls */
+.score-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.qbtn{padding:5px 10px;border:1px solid var(--bstrong);border-radius:var(--rs);background:var(--surface);color:var(--text);font-size:12px;cursor:pointer;transition:background .12s;font-family:'Inter',sans-serif}
+.qbtn:hover{background:var(--s2)}.qbtn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.sinput{width:60px;text-align:center;padding:5px 4px;border:1px solid var(--bstrong);border-radius:var(--rs);font-size:13px;font-family:'Inter',sans-serif;color:var(--text);background:var(--surface)}
+.sinput:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,95,180,.12)}
+.sinput.over{border-color:var(--red)}
+.auto-score-btn{font-size:11px;padding:4px 10px;border:1px solid var(--blue);border-radius:var(--rs);background:var(--bluebg);color:var(--blue);cursor:pointer;font-family:'Inter',sans-serif}
+.auto-score-btn:hover{background:var(--blue);color:#fff}
+
+/* Flags */
+.flags{margin-bottom:13px;display:flex;flex-direction:column;gap:6px}
+.fbanner{display:flex;align-items:flex-start;gap:8px;padding:8px 11px;border-radius:var(--rs);font-size:13px;line-height:1.5}
+.fbanner i{margin-top:2px;flex-shrink:0}
+.fai{background:var(--amberbg);border:1px solid #e8c060;color:var(--amber)}
+.fdup{background:var(--orangebg);border:1px solid #f0a060;color:var(--orange)}
+.fwc{background:var(--redbg);border:1px solid #f0a0a0;color:var(--red)}
+.fclean{background:var(--greenbg);border:1px solid #80d0a8;color:var(--green)}
+
+.total-bar{display:flex;justify-content:space-between;align-items:center;background:var(--s2);border-radius:var(--rs);padding:10px 14px;margin-top:13px;border:1px solid var(--border)}
+.tlbl{font-size:13px;font-weight:500}.tval{font-size:20px;font-weight:600}
+.tval.pass{color:var(--green)}.tval.fail{color:var(--red)}
+.fb-lbl{font-size:12px;color:var(--muted);margin:13px 0 4px;font-weight:500}
+.fb-area{width:100%;border:1px solid var(--bstrong);border-radius:var(--rs);padding:8px 10px;font-size:13px;font-family:'Inter',sans-serif;color:var(--text);background:var(--surface);resize:vertical;min-height:70px;line-height:1.6}
+.fb-area:focus{outline:none;border-color:var(--blue)}
+
+.nav-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:16px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 15px;border:1px solid var(--bstrong);border-radius:var(--rs);background:var(--surface);color:var(--text);font-size:13px;font-family:'Inter',sans-serif;font-weight:500;cursor:pointer;text-decoration:none;transition:background .15s;white-space:nowrap}
+.btn:hover{background:var(--s2)}.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-primary{background:var(--text);color:#fff;border-color:var(--text)}.btn-primary:hover{opacity:.85;background:var(--text)}
+.btn-green{background:var(--green);color:#fff;border-color:var(--green)}.btn-green:hover{opacity:.85}
+.btn-blue{background:var(--blue);color:#fff;border-color:var(--blue)}.btn-blue:hover{opacity:.85}
+.ml-auto{margin-left:auto}
+
+.int-grid,.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:18px}
+.istat,.scard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px;text-align:center}
+.ival,.sval{font-size:22px;font-weight:600;display:block}.ilbl,.slbl{font-size:11px;color:var(--muted);margin-top:3px}
+.int-tbl-wrap,.res-tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.int-tbl,.res-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.int-tbl{min-width:500px}.res-tbl{min-width:580px}
+.int-tbl th,.res-tbl th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.int-tbl td,.res-tbl td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+.int-tbl tr:last-child td,.res-tbl tr:last-child td{border-bottom:none}
+.int-tbl tr:hover td,.res-tbl tr:hover td{background:var(--s2)}
+.chip{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:500;padding:2px 7px;border-radius:20px;margin:1px 2px 1px 0}
+.cai{background:var(--amberbg);color:var(--amber)}.cdup{background:var(--orangebg);color:var(--orange)}.cok{background:var(--greenbg);color:var(--green)}
+.pass-t{color:var(--green);font-weight:600}.fail-t{color:var(--red);font-weight:600}
+.gpill{display:inline-block;width:24px;height:24px;line-height:24px;text-align:center;border-radius:50%;font-size:12px;font-weight:600}
+.gA{background:var(--greenbg);color:var(--green)}.gB{background:var(--bluebg);color:var(--blue)}
+.gC{background:var(--amberbg);color:var(--amber)}.gD{background:#fff3e0;color:#7a4d00}.gF{background:var(--redbg);color:var(--red)}
+.ptitle{font-size:20px;font-weight:600;margin-bottom:5px}.psub{font-size:13px;color:var(--muted);margin-bottom:22px}
+.stitle{font-size:15px;font-weight:600;margin-bottom:13px}
+.warn-box{background:var(--amberbg);border:1px solid #e8c060;border-radius:var(--rs);padding:11px 13px;font-size:13px;color:var(--amber);margin-bottom:13px}
+.progress-bar-wrap{background:var(--border);border-radius:20px;height:6px;margin:10px 0 4px}
+.progress-bar-fill{background:var(--blue);height:6px;border-radius:20px;transition:width .3s}
+
+/* Marking guide panel */
+.guide-panel{background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;font-size:12px;line-height:1.6;color:var(--muted);margin-bottom:8px}
+.guide-panel strong{color:var(--text)}
+
+@media(max-width:768px){
+  main{padding:18px 12px 48px}
+  .int-grid,.stat-grid{grid-template-columns:repeat(2,1fr)}
+  .nav-bar .ml-auto{margin-left:0;width:100%}
+  .nav-bar .ml-auto .btn{width:100%;justify-content:center}
+}
+@media(max-width:480px){
+  header{padding:10px 12px;gap:8px}.hsub{display:none}.htitle{font-size:13px}.hlogo{width:30px;height:30px;font-size:13px}
+  main{padding:13px 10px 38px}.ptitle{font-size:17px}.card{padding:12px}
+  .card-hd{flex-direction:column;gap:5px}
+  .rrow-top{grid-template-columns:1fr}.rmax{display:none}
+  .score-row{gap:5px}
+  .total-bar{flex-direction:column;align-items:flex-start;gap:3px}
+  .nav-bar{flex-direction:column;gap:7px}.nav-bar .btn{width:100%;justify-content:center;padding:10px 14px}.ml-auto{margin-left:0}
+  .int-grid,.stat-grid{grid-template-columns:1fr 1fr;gap:7px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="hlogo"><i class="fas fa-graduation-cap"></i></div>
+  <div><div class="htitle">EDF 423 Auto Marker</div><div class="hsub">University of Lagos — Department of Educational Foundations</div></div>
+  <div class="hright"><div class="pill" id="progress-pill"></div></div>
+</header>
+<main>
+
+<!-- STEP 1: UPLOAD -->
+<div id="step-upload" class="step active">
+  <h1 class="ptitle">Upload responses</h1>
+  <p class="psub">Export your Google Forms responses as CSV, then upload below.</p>
+  <div class="upload-zone" id="drop-zone" onclick="document.getElementById('csv-input').click()">
+    <i class="fas fa-cloud-upload-alt"></i>
+    <h3>Drop your CSV file here</h3>
+    <p>or click to browse — Google Forms → Responses → Download as CSV</p>
+    <input type="file" id="csv-input" accept=".csv">
+  </div>
+  <div class="divider">or</div>
+  <button class="btn" onclick="loadSample()"><i class="fas fa-flask"></i> Load sample responses</button>
+  <div id="upload-error" style="background:var(--redbg);border:1px solid #f0a0a0;border-radius:var(--rs);padding:10px 13px;font-size:13px;color:var(--red);margin-top:13px;display:none"></div>
+  <div class="card" style="margin-top:24px">
+    <p class="sec-title">How it works</p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;font-size:13px">
+      <div style="display:flex;gap:9px"><div style="min-width:24px;height:24px;background:var(--bluebg);color:var(--blue);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0">1</div><div><strong>Upload</strong> your Google Forms CSV — names, matric numbers, and responses are read automatically.</div></div>
+      <div style="display:flex;gap:9px"><div style="min-width:24px;height:24px;background:var(--amberbg);color:var(--amber);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0">2</div><div><strong>Integrity check</strong> — AI writing patterns and duplicate submissions are flagged.</div></div>
+      <div style="display:flex;gap:9px"><div style="min-width:24px;height:24px;background:var(--purplebg);color:var(--purple);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0">3</div><div><strong>Auto marking runs</strong> — a built-in marking guide checks each response for required concepts, keywords, word count, and citation patterns. Scores are suggested automatically.</div></div>
+      <div style="display:flex;gap:9px"><div style="min-width:24px;height:24px;background:var(--greenbg);color:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0">4</div><div><strong>You review and override</strong> — every score is editable. Quick buttons (0 / half / full) speed up reviewing. You have the final say.</div></div>
+      <div style="display:flex;gap:9px"><div style="min-width:24px;height:24px;background:var(--greenbg);color:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0">5</div><div><strong>Download results</strong> — CSV with names, scores, grades, flags, and part-by-part marks.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 2: INTEGRITY -->
+<div id="step-integrity" class="step">
+  <h1 class="ptitle">Integrity check</h1>
+  <p class="psub" id="int-sub"></p>
+  <div id="int-stats"></div>
+  <div class="card">
+    <p class="stitle">Student flags</p>
+    <div class="int-tbl-wrap">
+      <table class="int-tbl">
+        <thead><tr><th>Name</th><th>Matric</th><th>Q</th><th>Words</th><th>AI writing</th><th>Duplicate</th><th>Status</th></tr></thead>
+        <tbody id="int-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="warn-box"><strong><i class="fas fa-exclamation-triangle"></i> Note:</strong> Flags are indicators only — not proof. Read each response before making any decision.</div>
+  <div class="nav-bar">
+    <button class="btn" onclick="showStep('step-upload')"><i class="fas fa-arrow-left"></i> Back</button>
+    <button class="btn btn-primary" onclick="runAutoMark()">Run auto marking <i class="fas fa-bolt"></i></button>
+  </div>
+</div>
+
+<!-- STEP 3: AUTO MARKING PROGRESS -->
+<div id="step-progress" class="step">
+  <h1 class="ptitle">Auto marking in progress</h1>
+  <p class="psub">Checking each response against the marking guide...</p>
+  <div class="card">
+    <div id="prog-list" style="display:flex;flex-direction:column;gap:8px"></div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="prog-bar" style="width:0%"></div></div>
+    <div style="font-size:12px;color:var(--muted);margin-top:4px" id="prog-text">0 of 0 complete</div>
+  </div>
+</div>
+
+<!-- STEP 4: MARK -->
+<div id="step-mark" class="step">
+  <div id="student-card"></div>
+  <div class="nav-bar">
+    <button class="btn" id="btn-prev" onclick="navigate(-1)"><i class="fas fa-arrow-left"></i> Previous</button>
+    <button class="btn btn-primary" id="btn-next" onclick="navigate(1)">Next <i class="fas fa-arrow-right"></i></button>
+    <button class="btn ml-auto" onclick="showStep('step-integrity')"><i class="fas fa-shield-alt"></i> Integrity</button>
+    <button class="btn" onclick="goToResults()"><i class="fas fa-chart-bar"></i> Results</button>
+  </div>
+</div>
+
+<!-- STEP 5: RESULTS -->
+<div id="step-results" class="step">
+  <h1 class="ptitle">Results summary</h1>
+  <p class="psub" id="res-sub"></p>
+  <div id="res-stats"></div>
+  <div class="card">
+    <p class="stitle">Student scores</p>
+    <div class="res-tbl-wrap">
+      <table class="res-tbl">
+        <thead><tr><th>Name</th><th>Matric</th><th>Q</th><th>Score/20</th><th>Grade</th><th>Result</th><th>AI flag</th><th>Dup</th><th></th></tr></thead>
+        <tbody id="res-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="nav-bar">
+    <button class="btn" onclick="showStep('step-mark')"><i class="fas fa-arrow-left"></i> Back to marking</button>
+    <button class="btn btn-green ml-auto" onclick="exportCSV()"><i class="fas fa-download"></i> Download results (CSV)</button>
+  </div>
+</div>
+
+</main>
+<script>
+/* ════════════════════════════════════════════
+   MARKING GUIDE — full rule-based rubric
+   Each criterion has:
+   - required: keywords that MUST appear (any match = present)
+   - bonus: extra keywords that improve score
+   - citationCheck: whether to look for (Author, Year) pattern
+   - minWords: minimum word threshold
+   - scoreLogic: function(text, found, wordCount) => {score, hint, level}
+════════════════════════════════════════════ */
+const MARKING_GUIDE = {
+  Q1: {
+    pA: {
+      max: 2,
+      label: 'Part A — Behaviour described in observable, specific, measurable terms. No vague labels. States what students do, where, and how often.',
+      guide: 'Award 2: Specific observable behaviour described with location and frequency. Award 1: Behaviour described but missing location OR frequency. Award 0: Only labels used ("lazy", "rude", "bad attitude") with no concrete description.',
+      required: ['student','school','class','teacher','lesson','period','assembly','time','week','day','often','always','every','sit','stand','talk','phone','shout','leave','walk','arrive','submit','attend'],
+      bonus: ['percentage','percent','four out of','five out of','times','per lesson','per week','morning','afternoon','during'],
+      scoreLogic(text, found, wc) {
+        const t = text.toLowerCase();
+        const hasLocation = /school|class|lesson|assembly|period|laboratory|canteen|corridor|toilet|gate/.test(t);
+        const hasFreq = /\d+.*time|every|daily|weekly|always|rarely|often|percent|four out|five out|each/.test(t);
+        const hasAction = /student|pupil/.test(t) && /do|does|did|use|talk|shout|leave|come|arrive|submit|sit|stand|refuse|walk/.test(t);
+        const hasLabel = /\b(lazy|rude|bad|naughty|stubborn|troublemaker|disrespectful)\b/.test(t);
+        if (hasLabel && !hasAction) return {score:0, level:'weak', hint:'Response only uses labels like "lazy" or "rude" without describing the actual behaviour.'};
+        if (hasAction && hasLocation && hasFreq) return {score:2, level:'good', hint:'Behaviour described with observable action, location, and frequency. Full marks.'};
+        if (hasAction && (hasLocation || hasFreq)) return {score:1, level:'partial', hint:'Behaviour is observable but missing either location or frequency.'};
+        return {score:0, level:'weak', hint:'No clear observable behaviour described.'};
+      }
+    },
+    pB: {
+      max: 4,
+      label: 'Part B — ABC model: Antecedent, Behaviour, Consequence identified AND the connection between them explained (not just listed).',
+      guide: 'Award 4: All three components correctly identified AND the connection clearly explained. Award 3: All three present but connection weak. Award 2: Two components identified correctly. Award 1: Only one component or all listed with no explanation. Award 0: No ABC analysis attempted.',
+      required: ['antecedent','behaviour','consequence','trigger','happens','result','gain','escape','avoid','reward','punish','reinforce','because','reason','why','leads','causes','therefore'],
+      bonus: ['positive reinforcement','negative reinforcement','operant','learned','maintained','attention','peer','social','escape','avoidance','function'],
+      scoreLogic(text, found, wc) {
+        const t = text.toLowerCase();
+        const hasA = /antecedent|trigger|before|when|starts|begins|signal|cue/.test(t);
+        const hasB = /behaviour|behavior|what the student|action/.test(t);
+        const hasC = /consequence|result|outcome|gain|escape|avoid|reward|attention|peer/.test(t);
+        const hasConn = /because|therefore|reason|explains|why|leads to|causes|maintained|this means|connection|link|result in/.test(t);
+        const count = [hasA,hasB,hasC].filter(Boolean).length;
+        if (count===3 && hasConn) return {score:4, level:'good', hint:'All three ABC components present and connection between them explained.'};
+        if (count===3 && !hasConn) return {score:3, level:'partial', hint:'A, B, and C all identified but the connection between them is not clearly explained.'};
+        if (count===2) return {score:2, level:'partial', hint:'Only two of the three ABC components are clearly identified.'};
+        if (count===1) return {score:1, level:'weak', hint:'Only one ABC component identified.'};
+        return {score:0, level:'weak', hint:'No ABC analysis found.'};
+      }
+    },
+    pC: {
+      max: 4,
+      label: 'Part C — Two real traceable published studies cited with author(s), year, finding, and whether they support or challenge Part B.',
+      guide: 'Award 4: Two real studies with author, year, finding, and support/challenge discussion. Award 3: Two studies present but one lacks finding or support/challenge. Award 2: Only one complete study. Award 1: References mentioned but no findings or support/challenge. Award 0: No references OR references that appear fabricated.',
+      required: [],
+      citationCheck: true,
+      bonus: ['journal','found','study','research','support','challenge','suggest','show','demonstrate','according','nigerian','africa'],
+      scoreLogic(text, found, wc) {
+        const t = text.toLowerCase();
+        // Look for citation patterns: Author (Year) or (Author, Year)
+        const citPat = /([A-Z][a-z]+(?:\s+(?:and|&)\s+[A-Z][a-z]+)?)\s*\((\d{4})\)|[(\[]\s*[A-Z][a-z]+.*?(?:19|20)\d{2}/g;
+        const cits = [...text.matchAll(/[A-Z][a-z]+(?:\s+(?:and|&|\s)\s*[A-Z][a-z]+)?\s*\((?:19|20)\d{2}\)|\((?:[A-Z][a-z]+[,\s]+(?:19|20)\d{2})\)/g)];
+        const yearCount = (text.match(/(?:19|20)\d{2}/g)||[]).length;
+        const hasSupChal = /support|challenge|consistent with|contradicts|aligns|agrees|disagrees|similar|unlike|however|whereas/.test(t);
+        const hasFindings = /found|showed|reported|demonstrated|revealed|indicated|suggested|concluded|argued/.test(t);
+        if (cits.length >= 2 && hasFindings && hasSupChal) return {score:4, level:'good', hint:`${cits.length} citation(s) detected with findings and support/challenge discussion.`};
+        if (cits.length >= 2 && hasFindings) return {score:3, level:'partial', hint:'Two citations with findings but no support/challenge discussion.'};
+        if (cits.length >= 1 && hasFindings) return {score:2, level:'partial', hint:'Only one complete citation with findings found.'};
+        if (yearCount >= 1) return {score:1, level:'weak', hint:'References mentioned but findings or support/challenge discussion missing.'};
+        return {score:0, level:'weak', hint:'No citations detected. This part scores zero if references cannot be verified.'};
+      }
+    },
+    pD: {
+      max: 5,
+      label: 'Part D — At least two behaviour modification techniques named, linked to ABC analysis, and applied specifically in a Nigerian secondary school.',
+      guide: 'Award 5: Two techniques named, both linked to ABC, both applied in Nigerian context with specific detail. Award 4: Two techniques named and applied but Nigerian context is generic. Award 3: Two techniques named but only one linked to ABC. Award 2: Only one technique with some detail. Award 1: Techniques mentioned but no application. Award 0: No techniques.',
+      required: ['reinforcement','punishment','extinction','token','shaping','modelling','desensitisation','schedule','reward','consequence','ignore','praise','withhold','remove','add'],
+      bonus: ['positive reinforcement','negative reinforcement','token economy','extinction','differential reinforcement','response cost','time out','merit','sticker','board','nigeria','lagos','ibadan','teacher','class','school','assembly','parent','community'],
+      scoreLogic(text, found, wc) {
+        const t = text.toLowerCase();
+        const techniques = ['positive reinforcement','negative reinforcement','punishment','extinction','token economy','shaping','modelling','desensitisation','systematic desensitisation','differential reinforcement','response cost','time out','overcorrection','chaining','fading','prompting'];
+        const foundTech = techniques.filter(tech => t.includes(tech));
+        const hasNigerian = /nigeria|lagos|ibadan|abuja|yoruba|igbo|hausa|public school|private school|waec|jamb|naira|teacher|parent|community/.test(t);
+        const hasABCLink = /because|antecedent|trigger|consequence|reinforc|abc|analysis|part b/.test(t);
+        if (foundTech.length >= 2 && hasABCLink && hasNigerian) return {score:5, level:'good', hint:`Techniques found: ${foundTech.slice(0,3).join(', ')}. Linked to ABC and applied in Nigerian context.`};
+        if (foundTech.length >= 2 && (hasABCLink || hasNigerian)) return {score:4, level:'good', hint:`Techniques found: ${foundTech.slice(0,3).join(', ')}. Partially linked to context.`};
+        if (foundTech.length >= 2) return {score:3, level:'partial', hint:`Two techniques found (${foundTech.slice(0,2).join(', ')}) but not clearly linked to ABC or Nigerian context.`};
+        if (foundTech.length === 1) return {score:2, level:'partial', hint:`Only one technique found: ${foundTech[0]}.`};
+        if (/reward|punish|ignore|praise/.test(t)) return {score:1, level:'weak', hint:'General reward/punishment language used but no named techniques.'};
+        return {score:0, level:'weak', hint:'No behaviour modification techniques identified.'};
+      }
+    },
+    pE: {
+      max: 3,
+      label: 'Part E — One honest Nigerian-specific obstacle. Explains why it exists and adjusts the plan.',
+      guide: 'Award 3: Genuine Nigerian-specific obstacle + explanation of why it exists + plan adjustment. Award 2: Nigerian obstacle identified and explained but plan not adjusted. Award 1: Obstacle mentioned but generic (could apply anywhere). Award 0: No obstacle or purely theoretical.',
+      required: ['nigeria','school','teacher','class','parent','community','challenge','problem','obstacle','difficult','limit','resource','time','staff','budget','culture','tradition','religion','government','policy','class size','large'],
+      bonus: ['ministry','local government','pta','principal','vice principal','waec','jamb','strikes','salary','underpaid','overstretched','overcrowded','electricity','power','nepa','light','adjust','change','modify','adapt','instead','alternative'],
+      scoreLogic(text, found, wc) {
+        const t = text.toLowerCase();
+        const isNigerian = /nigeria|lagos|ibadan|abuja|nepa|waec|jamb|ministry of education|pta|naira|yoruba|igbo|hausa|strikes|underpaid|class size|overcrowd/.test(t);
+        const hasExplan = /because|reason|due to|caused by|result of|since|as a result|this is why|explains/.test(t);
+        const hasAdjust = /adjust|change|modify|adapt|instead|alternative|therefore|so i would|plan would|different/.test(t);
+        if (isNigerian && hasExplan && hasAdjust) return {score:3, level:'good', hint:'Nigerian-specific obstacle identified, explained, and plan adjusted.'};
+        if (isNigerian && (hasExplan || hasAdjust)) return {score:2, level:'partial', hint:'Nigerian obstacle identified but explanation or plan adjustment is incomplete.'};
+        if (isNigerian) return {score:1, level:'partial', hint:'Nigerian context mentioned but obstacle not explained or plan not adjusted.'};
+        return {score:0, level:'weak', hint:'No Nigerian-specific obstacle identified.'};
+      }
+    },
+    pF: {
+      max: 2,
+      label: 'Part F — One genuine paragraph of personal reflection on theory vs Nigerian school reality.',
+      guide: 'Award 2: Genuine personal reflection — shows insight into the gap between textbook theory and Nigerian school practice. Award 1: Reflection attempted but generic or superficial. Award 0: Not attempted or just a summary.',
+      required: ['theory','practice','real','reality','taught','learned','realised','realise','think','believe','found','difference','gap','nigeria','school','textbook','actually','however','but','although'],
+      bonus: ['in conclusion','this assignment','now i understand','i never','i did not','surprised','expected','discovered','insight','challenges','appreciation','complex','difficult','simple','assumed'],
+      scoreLogic(text, found, wc) {
+        const t = text.toLowerCase();
+        const hasPersonal = /\b(i |my |me |we |our )\b/.test(t);
+        const hasTheoryVsPractice = /(theory|theoretical|textbook).*(practice|reality|real|nigeria|school)|(practice|reality|real|nigeria|school).*(theory|theoretical|textbook)/.test(t);
+        const hasInsight = /realise|realize|understand|discover|found|learned|taught|appreciate|complex|difficult|differ/.test(t);
+        if (hasPersonal && hasTheoryVsPractice && hasInsight) return {score:2, level:'good', hint:'Genuine personal reflection with theory-vs-practice insight.'};
+        if (hasPersonal && (hasTheoryVsPractice || hasInsight)) return {score:1, level:'partial', hint:'Reflection attempted but lacks depth or genuine insight.'};
+        return {score:0, level:'weak', hint:'No personal reflection found.'};
+      }
+    }
+  },
+  Q2: {
+    q2a: {
+      max: 4,
+      label: '(a) Behaviour described clearly — observable, specific, measurable.',
+      guide: 'Award 4: Specific, observable, measurable behaviour with setting and frequency. Award 3: Observable but missing one dimension. Award 2: Somewhat specific but vague. Award 1: Very general. Award 0: No description.',
+      required: ['student','school','class','teacher','behaviour','problem','observe','see','notice','happen','time','often','frequency'],
+      bonus: ['percent','times per','each','every','daily','weekly','during','when','where','specifically','observable','measurable'],
+      scoreLogic(text, found, wc) {
+        const t = text.toLowerCase();
+        const hasObs = /student|pupil/.test(t) && /do|does|refuse|submit|attend|arrive|talk|shout|leave|use|take|bring/.test(t);
+        const hasWhere = /school|class|lesson|corridor|gate|assembly|laboratory|canteen/.test(t);
+        const hasWhen = /every|daily|each|time|often|always|week|lesson|period|\d+/.test(t);
+        const c = [hasObs, hasWhere, hasWhen].filter(Boolean).length;
+        if (c===3) return {score:4, level:'good', hint:'Behaviour described with observable action, location, and frequency.'};
+        if (c===2) return {score:3, level:'partial', hint:'Observable behaviour described but one dimension (location or frequency) missing.'};
+        if (c===1) return {score:2, level:'partial', hint:'Behaviour is vague — lacks both location and frequency.'};
+        return {score:1, level:'weak', hint:'Very general description only.'};
+      }
+    },
+    q2b: {
+      max: 5,
+      label: '(b) Operant conditioning technique(s) correctly identified and justified for this specific behaviour.',
+      guide: 'Award 5: Correct technique(s) named, well justified with reference to operant conditioning principles. Award 4: Correct technique but justification is thin. Award 3: Technique named but not clearly linked to operant conditioning. Award 2: Vague or partially correct. Award 1: General mention only. Award 0: Nothing relevant.',
+      required: ['reinforcement','punishment','extinction','operant','skinner','consequence','behaviour','token','reward','schedule','positive','negative'],
+      bonus: ['positive reinforcement','negative reinforcement','positive punishment','negative punishment','extinction','differential reinforcement','token economy','schedule of reinforcement','continuous','intermittent','because','therefore','this technique','chosen','selected'],
+      scoreLogic(text, found, wc) {
+        const t = text.toLowerCase();
+        const operantTerms = ['positive reinforcement','negative reinforcement','positive punishment','negative punishment','extinction','token economy','differential reinforcement','response cost','time out','shaping','schedule of reinforcement'];
+        const foundOp = operantTerms.filter(op => t.includes(op));
+        const hasJustify = /because|reason|why|chosen|selected|appropriate|suitable|fit|works|effective|address|this behaviour/.test(t);
+        const hasSkinner = /skinner|operant|consequence|reinforce|punish/.test(t);
+        if (foundOp.length >= 1 && hasJustify && hasSkinner) return {score:5, level:'good', hint:`Operant technique(s) found: ${foundOp.slice(0,2).join(', ')}. Justified with reference to operant conditioning.`};
+        if (foundOp.length >= 1 && (hasJustify || hasSkinner)) return {score:4, level:'good', hint:`Technique(s) found: ${foundOp.slice(0,2).join(', ')}. Partially justified.`};
+        if (foundOp.length >= 1) return {score:3, level:'partial', hint:`Technique found: ${foundOp[0]}. Not clearly linked to operant conditioning principles.`};
+        if (hasSkinner || /reward|punish|consequence/.test(t)) return {score:2, level:'partial', hint:'Operant conditioning language used but no specific technique named.'};
+        return {score:1, level:'weak', hint:'No operant conditioning technique identified.'};
+      }
+    },
+    q2c: {
+      max: 6,
+      label: '(c) Implementation plan — practical, detailed, grounded in Nigerian context.',
+      guide: 'Award 6: Detailed, step-by-step, clearly Nigerian in context. Award 5: Detailed and practical but Nigerian context thin. Award 4: Reasonably detailed plan. Award 3: Some steps described. Award 2: Very general plan. Award 1: Plan mentioned but no detail. Award 0: Nothing.',
+      required: ['plan','implement','step','first','then','next','apply','use','teacher','student','class','week','session','monitor','measure','record','observe'],
+      bonus: ['nigeria','lagos','ibadan','naira','public school','private school','principal','parent','community','assembly','term','waec','board','chart','record','data','progress','adjust','modify'],
+      scoreLogic(text, found, wc) {
+        const t = text.toLowerCase();
+        const hasSteps = /first|second|third|step|then|next|after|begin|start|introduce|implement|apply|week one|week two|phase|session/.test(t);
+        const hasDetail = /\d/.test(t) && (/(chart|board|record|monitor|measure|data|progress|sheet)/.test(t));
+        const hasNigerian = /nigeria|lagos|ibadan|naira|public school|private school|assembly|principal|waec/.test(t);
+        const hasTeacherStudent = /teacher|counsellor|counselor/.test(t) && /student|pupil|child/.test(t);
+        let s = 0;
+        if (hasSteps) s+=2;
+        if (hasDetail) s+=2;
+        if (hasNigerian) s+=1;
+        if (hasTeacherStudent) s+=1;
+        s = Math.min(6, s);
+        const level = s>=5?'good':s>=3?'partial':'weak';
+        const hint = s>=5?'Detailed, practical plan with Nigerian context.' : s>=3?'Plan described but could be more detailed or contextualised.' : 'Implementation plan is vague or missing.';
+        return {score:s, level, hint};
+      }
+    },
+    q2d: {
+      max: 5,
+      label: '(d) Ethical considerations — specific and genuine, not generic statements.',
+      guide: 'Award 5: Specific ethical issues raised with genuine insight. Award 4: Two or more ethical points with some depth. Award 3: Ethics addressed but mostly generic. Award 2: One ethical point mentioned briefly. Award 1: Ethics mentioned in passing. Award 0: No ethics.',
+      required: ['ethic','consent','right','privacy','harm','benefit','voluntary','transparent','honest','respect','dignity','confidential','welfare','wellbeing','autonomy'],
+      bonus: ['informed consent','parental consent','right to refuse','power imbalance','manipulation','exploitation','cultural','nigeria','stigma','shame','label','punish','reinforce','token','reward','dependency','intrinsic','extrinsic'],
+      scoreLogic(text, found, wc) {
+        const t = text.toLowerCase();
+        const hasEthics = /ethic|consent|right|harm|benefit|voluntary|transparent|dignity|welfare|wellbeing/.test(t);
+        const hasSpecific = /informed consent|parental consent|power imbalance|cultural|nigeria|stigma|shame|dependency|intrinsic|extrinsic|label|manipulation/.test(t);
+        const hasDepth = (t.match(/ethic|consent|right|welfare|harm|benefit|dignity|voluntary/g)||[]).length >= 3;
+        if (hasEthics && hasSpecific && hasDepth) return {score:5, level:'good', hint:'Specific, genuine ethical considerations raised with depth.'};
+        if (hasEthics && (hasSpecific || hasDepth)) return {score:4, level:'good', hint:'Ethics addressed with some specificity.'};
+        if (hasEthics) return {score:3, level:'partial', hint:'Ethics mentioned but mostly generic statements.'};
+        if (/permission|agree|allow|parent/.test(t)) return {score:2, level:'partial', hint:'Brief mention of permission or parental consent but no ethical depth.'};
+        return {score:1, level:'weak', hint:'Ethics barely mentioned.'};
+      }
+    }
+  },
+  Q3: {
+    q3a: {
+      max: 5,
+      label: "(a) Bandura's theory applied to Emeka's situation — models identified, influence explained.",
+      guide: "Award 5: Bandura's theory correctly applied, all relevant models identified (friends, brother), observational learning explained. Award 4: Theory applied and models identified but influence thin. Award 3: Theory mentioned and some models identified. Award 2: Bandura mentioned but theory not applied to Emeka. Award 1: General social learning only. Award 0: Nothing relevant.",
+      required: ['bandura','social learning','observational learning','model','modelling','observe','watch','imitate','vicarious','friends','brother','dropout','failed','waec','emeka'],
+      bonus: ['acquisition','retention','reproduction','motivation','attention','similar','status','reinforcement','punishment','vicarious reinforcement','vicarious punishment','bobo','role model','peer'],
+      scoreLogic(text, found, wc) {
+        const t = text.toLowerCase();
+        const hasBandura = /bandura|social learning theory|observational learning/.test(t);
+        const hasModels = /(friend|brother|family|peer).*(drop|fail|learn|model|watch|observe)|(learn|watch|observe|model).*(friend|brother|family|peer)/.test(t);
+        const hasEmeka = /emeka/.test(t);
+        const hasInfluence = /learn|observe|watch|imitate|copy|model|vicarious|influence|affect|impact/.test(t);
+        const hasProcess = /attention|retention|reproduction|motivation|acquisition|performance/.test(t);
+        let s = 0;
+        if (hasBandura) s++;
+        if (hasModels) s+=2;
+        if (hasEmeka && hasInfluence) s++;
+        if (hasProcess) s++;
+        s = Math.min(5, s);
+        const level = s>=4?'good':s>=2?'partial':'weak';
+        const hint = s>=4?"Bandura's theory correctly applied to Emeka with models and influence explained." : s>=2?"Theory mentioned and models identified but application to Emeka's situation needs more depth." : "Bandura's theory not clearly applied to Emeka's situation.";
+        return {score:s, level, hint};
+      }
+    },
+    q3b: {
+      max: 4,
+      label: "(b) Self-efficacy correctly identified in Emeka's statement and why it must be addressed first.",
+      guide: "Award 4: Self-efficacy correctly named, Emeka's exact statement linked to it, and a clear reason why it must be addressed before modelling. Award 3: Self-efficacy identified and linked to Emeka but priority not explained. Award 2: Self-efficacy mentioned but not linked to the statement. Award 1: General confidence mentioned. Award 0: Not addressed.",
+      required: ['self-efficacy','efficacy','belief','emeka','fail','try','cannot','unable','capable','confidence','first','before','priority','address'],
+      bonus: ['task-specific','bandura','low self-efficacy','academic self-efficacy','learned helplessness','intervention','modelling','acquisition','performance','necessary','foundation','prerequisite'],
+      scoreLogic(text, found, wc) {
+        const t = text.toLowerCase();
+        const hasSE = /self.efficacy|self efficacy/.test(t);
+        const hasEmeka = /emeka/.test(t);
+        const hasStatement = /even if.*try|try.*fail|will.*fail|cannot succeed|will not succeed|no point/.test(t);
+        const hasPriority = /first|before|prior|must address|address.*first|prerequisite|foundation|necessary|without.*cannot/.test(t);
+        if (hasSE && hasEmeka && hasPriority) return {score:4, level:'good', hint:"Self-efficacy correctly identified and linked to Emeka's statement with priority explained."};
+        if (hasSE && (hasEmeka || hasStatement)) return {score:3, level:'partial', hint:"Self-efficacy identified and partially linked to Emeka but priority not clearly argued."};
+        if (hasSE) return {score:2, level:'partial', hint:"Self-efficacy mentioned but not clearly linked to Emeka's specific statement."};
+        if (/confidence|belief|motivation|attitude/.test(t)) return {score:1, level:'weak', hint:'General confidence/motivation language used but self-efficacy not named.'};
+        return {score:0, level:'weak', hint:'Self-efficacy not addressed.'};
+      }
+    },
+    q3c: {
+      max: 7,
+      label: '(c) Modelling-based intervention — both Acquisition phase AND Performance phase addressed with specific steps.',
+      guide: 'Award 7: Both phases addressed with specific, practical steps and Nigerian context. Award 6: Both phases addressed but one is thin. Award 5: Both phases mentioned but steps are vague. Award 4: Only one phase addressed well. Award 3: Modelling intervention described but phases not distinguished. Award 2: General modelling mentioned. Award 1: Very vague. Award 0: Nothing.',
+      required: ['acquisition','performance','modelling','model','phase','step','intervention','emeka','observe','watch','imitate','demonstrate','similar','status','vicarious'],
+      bonus: ['nigerian','lagos','school','counsellor','counselor','peer','role model','live model','symbolic','video','senior student','university student','attention','retention','reproduction','motivation','opportunity','practice','feedback','reinforce'],
+      scoreLogic(text, found, wc) {
+        const t = text.toLowerCase();
+        const hasAcq = /acquisition|acquisition phase|learning phase|watch.*model|observe.*model|attent|retention/.test(t);
+        const hasPerf = /performance|performance phase|doing|practice|try|attempt|opportunity|vicarious reinforc/.test(t);
+        const hasBothPhases = hasAcq && hasPerf;
+        const hasSteps = /step|first|then|next|begin|introduce|session|phase|week/.test(t);
+        const hasNigerian = /nigeria|lagos|ibadan|nigerian|public school|counsellor|peer|community/.test(t);
+        const hasSimilarity = /similar|same background|same age|peer|junior|senior|status/.test(t);
+        let s = 0;
+        if (hasBothPhases) s+=3; else if (hasAcq || hasPerf) s+=2;
+        if (hasSteps) s+=2;
+        if (hasNigerian) s++;
+        if (hasSimilarity) s++;
+        s = Math.min(7, s);
+        const level = s>=6?'good':s>=4?'partial':'weak';
+        const hint = s>=6?'Both Acquisition and Performance phases addressed with specific steps.' : s>=4?'Intervention described but one phase or specificity is lacking.' : 'Modelling intervention vague or phases not distinguished.';
+        return {score:s, level, hint};
+      }
+    },
+    q3d: {
+      max: 4,
+      label: "(d) One honest context-specific limitation in Emeka's situation, with adjusted plan.",
+      guide: "Award 4: Specific to Emeka's situation (not generic), explained, and plan adjusted. Award 3: Specific limitation but adjustment thin. Award 2: Limitation identified but generic. Award 1: Obstacle mentioned in passing. Award 0: Nothing.",
+      required: ['limitation','obstacle','challenge','problem','difficult','barrier','however','but','although','emeka','adjust','change','adapt','therefore','instead','alternative','plan'],
+      bonus: ['nigeria','lagos','school','family','community','model','accessible','available','resource','counsellor','peer','dropout','brother','friend','trust','culture'],
+      scoreLogic(text, found, wc) {
+        const t = text.toLowerCase();
+        const hasLimit = /limitation|obstacle|challenge|problem|barrier|however|difficulty|difficult|issue/.test(t);
+        const hasSpecific = /emeka|family|brother|friend|peer|model|accessible|available|trust|culture|nigerian|school|counsellor/.test(t);
+        const hasAdjust = /adjust|change|adapt|instead|alternative|therefore|would|modify|different approach/.test(t);
+        if (hasLimit && hasSpecific && hasAdjust) return {score:4, level:'good', hint:"Context-specific limitation identified and plan adjusted."};
+        if (hasLimit && (hasSpecific || hasAdjust)) return {score:3, level:'partial', hint:'Limitation identified but adjustment or specificity is incomplete.'};
+        if (hasLimit) return {score:2, level:'partial', hint:'Limitation mentioned but generic and plan not adjusted.'};
+        return {score:1, level:'weak', hint:'Obstacle barely mentioned.'};
+      }
+    }
+  }
+};
+
+/* ════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════ */
+const TOTAL_MAX = 20;
+let students=[], current=0, scores={}, feedback={}, autoResults={}, integrityResults=[];
+
+/* ════════════════════════════════════════════
+   AI / DUPLICATE DETECTION
+════════════════════════════════════════════ */
+const AI_WORDS=['delve','underscore','foundational','nuanced','seminal','pivotal','paramount','robust','seamless','transformative','comprehensive','holistic','multifaceted','leverage','utilize','facilitate','commence','endeavor','ascertain','furthermore','moreover','additionally','tapestry','cornerstone','linchpin','unpack'];
+const AI_PH=[/\bit is (worth noting|important to note|crucial to)\b/gi,/\bthis (highlights|underscores|demonstrates|showcases)\b/gi,/\bplays? (a|an) (crucial|pivotal|vital|key) role\b/gi,/\b(first and foremost|needless to say)\b/gi,/\b(in conclusion|to summarize),?\b/gi,/\b(furthermore|moreover|additionally),?\b/gi];
+function detectAI(text){
+  const t=text.toLowerCase(),wc=t.split(/\s+/).length;
+  if(wc<80) return {score:0,hits:[],wordCount:wc};
+  let hits=[];
+  AI_WORDS.forEach(w=>{const m=text.match(new RegExp('\\b'+w+'\\b','gi'));if(m) hits.push(`"${w}"×${m.length}`)});
+  AI_PH.forEach(re=>{const m=text.match(re);if(m) hits.push(`"${m[0].toLowerCase()}"`)});
+  const sents=text.split(/[.!?]+/).filter(s=>s.trim().length>20);
+  if(sents.length>=5){const lens=sents.map(s=>s.trim().split(/\s+/).length),avg=lens.reduce((a,b)=>a+b,0)/lens.length,cv=Math.sqrt(lens.reduce((a,b)=>a+Math.pow(b-avg,2),0)/lens.length)/avg;if(cv<0.25) hits.push('Uniform sentence lengths');}
+  return {score:Math.min(100,hits.length*9),hits:[...new Set(hits)],wordCount:wc};
+}
+function tokenize(t){return t.toLowerCase().replace(/[^a-z0-9\s]/g,' ').split(/\s+/).filter(w=>w.length>2)}
+function trigrams(toks){const s=new Set();for(let i=0;i<toks.length-2;i++) s.add(toks[i]+'_'+toks[i+1]+'_'+toks[i+2]);return s}
+function jaccard(a,b){if(!a.size||!b.size) return 0;let n=0;a.forEach(x=>{if(b.has(x)) n++});return n/(a.size+b.size-n)}
+function runIntegrity(){
+  const tgC=students.map(s=>trigrams(tokenize(s.response||'')));
+  integrityResults=students.map((s,i)=>{
+    let maxSim=0,matchName='';
+    for(let j=0;j<students.length;j++){if(j===i) continue;const sim=jaccard(tgC[i],tgC[j]);if(sim>maxSim){maxSim=sim;matchName=students[j].name;}}
+    const ai=detectAI(s.response||'');
+    return {aiFlag:ai.score>=40,aiScore:ai.score,aiHits:ai.hits,wordCount:ai.wordCount,dupFlag:maxSim>=0.35,dupSim:Math.round(maxSim*100),dupMatch:matchName};
+  });
+}
+
+/* ════════════════════════════════════════════
+   AUTO MARKING ENGINE
+════════════════════════════════════════════ */
+function autoMark(student){
+  const rubric = MARKING_GUIDE[student.question];
+  const text = student.response || '';
+  const result = {};
+  for(const key of Object.keys(rubric)){
+    const crit = rubric[key];
+    const t = text.toLowerCase();
+    const foundRequired = crit.required.filter(k=>t.includes(k));
+    const foundBonus = crit.bonus ? crit.bonus.filter(k=>t.includes(k)) : [];
+    const wc = text.split(/\s+/).length;
+    const {score, level, hint} = crit.scoreLogic(text, foundRequired, wc);
+    result[key] = {score, level, hint, foundRequired, foundBonus, max:crit.max};
+  }
+  // Word count check for Q2 and Q3
+  const wc = text.split(/\s+/).length;
+  if((student.question==='Q2'||student.question==='Q3') && wc < 2000){
+    result._wcWarning = `Response is only ${wc} words. Minimum required is 2,000 words.`;
+  }
+  return result;
+}
+
+function runAutoMark(){
+  showStep('step-progress');
+  const list=document.getElementById('prog-list');
+  list.innerHTML=students.map((s,i)=>`
+    <div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--border)">
+      <div style="width:26px;height:26px;border-radius:50%;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--muted);flex-shrink:0">${i+1}</div>
+      <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name}</div><div style="font-size:11px;color:var(--muted)">${s.question} · ${s.matric||'no matric'}</div></div>
+      <div id="ps-${i}" style="font-size:12px;color:var(--muted)">Waiting...</div>
+    </div>`).join('');
+
+  let i=0;
+  function next(){
+    if(i>=students.length){
+      setTimeout(()=>{current=0;showStep('step-mark');renderStudent();},600);
+      return;
+    }
+    document.getElementById('ps-'+i).innerHTML='<span style="color:var(--blue)"><i class="fas fa-spinner fa-spin"></i></span>';
+    setTimeout(()=>{
+      const res=autoMark(students[i]);
+      autoResults[i]=res;
+      scores[i]={};
+      const rubric=MARKING_GUIDE[students[i].question];
+      for(const key of Object.keys(rubric)) scores[i][key]=res[key].score;
+      document.getElementById('ps-'+i).innerHTML='<span style="color:var(--green);font-weight:500"><i class="fas fa-check"></i> Done</span>';
+      const pct=Math.round((i+1)/students.length*100);
+      document.getElementById('prog-bar').style.width=pct+'%';
+      document.getElementById('prog-text').textContent=`${i+1} of ${students.length} complete`;
+      i++;next();
+    },80);
+  }
+  next();
+}
+
+/* ════════════════════════════════════════════
+   RENDER MARKING CARD
+════════════════════════════════════════════ */
+function renderStudent(){
+  const pill=document.getElementById('progress-pill');
+  pill.textContent=`${current+1} / ${students.length}`;pill.style.display='block';
+  const s=students[current];
+  const rubric=MARKING_GUIDE[s.question];
+  const qLabel={Q1:'Question 1 — Parts A–F',Q2:'Question 2 — Operant Conditioning',Q3:'Question 3 — Social Learning (Emeka)'}[s.question];
+  const total=getTotal(current),grade=getGrade(total);
+  const ir=integrityResults[current]||{};
+  const ar=autoResults[current]||{};
+
+  document.getElementById('btn-prev').disabled=current===0;
+  document.getElementById('btn-next').innerHTML=current===students.length-1?'Finish & view results <i class="fas fa-chart-bar"></i>':'Next <i class="fas fa-arrow-right"></i>';
+
+  // Flags
+  let flags='';
+  if(ir.aiFlag) flags+=`<div class="fbanner fai"><i class="fas fa-robot"></i><div><strong>AI writing flagged (${ir.aiScore}%)</strong><br>${ir.aiHits.slice(0,3).join('; ')}</div></div>`;
+  if(ir.dupFlag) flags+=`<div class="fbanner fdup"><i class="fas fa-copy"></i><div><strong>Possible duplicate — ${ir.dupSim}% match with ${ir.dupMatch}</strong></div></div>`;
+  if(ar._wcWarning) flags+=`<div class="fbanner fwc"><i class="fas fa-exclamation-circle"></i><div><strong>Word count warning</strong><br>${ar._wcWarning}</div></div>`;
+  if(!ir.aiFlag&&!ir.dupFlag&&!ar._wcWarning) flags+=`<div class="fbanner fclean"><i class="fas fa-check-circle"></i><div><strong>No integrity flags</strong></div></div>`;
+
+  // Rubric rows
+  const rubricRows=Object.keys(rubric).map(key=>{
+    const crit=rubric[key];
+    const r=ar[key]||{};
+    const currentVal=scores[current][key]!==undefined?scores[current][key]:'';
+    const hintCls=r.level==='good'?'hint-good':r.level==='partial'?'hint-partial':'hint-weak';
+    const hintHtml=r.hint?`<div class="auto-hint ${hintCls}"><i class="fas fa-${r.level==='good'?'check-circle':r.level==='partial'?'exclamation-circle':'times-circle'}"></i> ${r.hint}</div>`:'';
+    // Found/missing keywords
+    const foundK=(r.foundRequired||[]).slice(0,6);
+    const missingK=(crit.required||[]).filter(k=>!(r.foundRequired||[]).includes(k)&&k.length>4).slice(0,4);
+    const kchips=foundK.length||missingK.length?`<div class="kchips">${foundK.map(k=>`<span class="kchip kfound">✓ ${k}</span>`).join('')}${missingK.map(k=>`<span class="kchip kmissing">✗ ${k}</span>`).join('')}</div>`:'';
+    // Guide text
+    const guideHtml=`<div class="guide-panel">${crit.guide}</div>`;
+    // Quick buttons
+    const halfMax=Math.round(crit.max/2*2)/2;
+    const qbtns=[0,halfMax,crit.max].filter((v,i,a)=>a.indexOf(v)===i).map(v=>`<button class="qbtn${parseFloat(currentVal)===v?' active':''}" onclick="quickScore('${key}',${v},${crit.max})">${v}</button>`).join('');
+    return `<div class="rubric-row">
+      <div class="rrow-top"><div class="rlabel">${crit.label}</div><div class="rmax">/ ${crit.max}</div></div>
+      ${guideHtml}
+      ${hintHtml}
+      ${kchips}
+      <div class="score-row">
+        ${qbtns}
+        <input type="number" class="sinput" id="inp-${key}" min="0" max="${crit.max}" step="0.5"
+          value="${currentVal}" placeholder="—"
+          oninput="saveScore('${key}',this.value,${crit.max})">
+        <span style="font-size:11px;color:var(--muted)">/ ${crit.max}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('student-card').innerHTML=`
+    <div class="card">
+      <div class="card-hd">
+        <div><div class="sname">${s.name}</div><div class="smeta">${s.matric||'No matric'} · Student ${current+1} of ${students.length} · ${ir.wordCount||0} words</div></div>
+        <span class="badge b${s.question.toLowerCase()}">${qLabel}</span>
+      </div>
+      <div class="flags">${flags}</div>
+      <div class="rlbl">Student response</div>
+      <div class="resp-box">${(s.response||'No response.').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+      <p class="sec-title">Marking rubric — auto scores pre-filled. Review and adjust.</p>
+      ${rubricRows}
+      <div class="total-bar">
+        <span class="tlbl">Total score</span>
+        <span class="tval ${total>=10?'pass':'fail'}" id="running-total">${Math.round(total*10)/10} / ${TOTAL_MAX} &nbsp; Grade: ${grade}</span>
+      </div>
+      <div class="fb-lbl">Feedback for student <span style="color:var(--hint);font-weight:400">(optional)</span></div>
+      <textarea class="fb-area" oninput="feedback[${current}]=this.value">${feedback[current]||''}</textarea>
+    </div>`;
+}
+
+function quickScore(key,val,max){
+  scores[current][key]=val;
+  const inp=document.getElementById('inp-'+key);
+  if(inp) inp.value=val;
+  refreshTotal();
+  renderStudent(); // re-render to update active button state
+}
+function saveScore(key,val,max){
+  const v=parseFloat(val);
+  const inp=document.getElementById('inp-'+key);
+  if(isNaN(v)||val===''){delete scores[current][key];if(inp) inp.classList.remove('over');}
+  else{const c=Math.min(max,Math.max(0,v));scores[current][key]=c;if(inp) inp.classList.toggle('over',v>max);}
+  refreshTotal();
+}
+function refreshTotal(){
+  const t=getTotal(current),g=getGrade(t);
+  const el=document.getElementById('running-total');
+  if(el){el.textContent=`${Math.round(t*10)/10} / ${TOTAL_MAX}   Grade: ${g}`;el.className='tval '+(t>=10?'pass':'fail');}
+}
+function getTotal(i){return Object.values(scores[i]||{}).reduce((a,b)=>a+(parseFloat(b)||0),0)}
+function getGrade(t){return t>=18?'A':t>=15?'B':t>=12?'C':t>=9?'D':'F'}
+function navigate(dir){const n=current+dir;if(n<0) return;if(n>=students.length){goToResults();return;}current=n;renderStudent();}
+function jumpTo(i){current=i;showStep('step-mark');renderStudent();}
+
+/* ════════════════════════════════════════════
+   INTEGRITY REPORT
+════════════════════════════════════════════ */
+function renderIntegrityReport(){
+  const ai=integrityResults.filter(r=>r.aiFlag).length;
+  const dup=integrityResults.filter(r=>r.dupFlag).length;
+  const clean=integrityResults.filter(r=>!r.aiFlag&&!r.dupFlag).length;
+  document.getElementById('int-sub').textContent=`${students.length} responses scanned`;
+  document.getElementById('int-stats').innerHTML=`<div class="int-grid">
+    <div class="istat"><span class="ival">${students.length}</span><span class="ilbl">Total</span></div>
+    <div class="istat"><span class="ival" style="color:var(--amber)">${ai}</span><span class="ilbl">AI flagged</span></div>
+    <div class="istat"><span class="ival" style="color:var(--orange)">${dup}</span><span class="ilbl">Duplicates</span></div>
+    <div class="istat"><span class="ival" style="color:var(--green)">${clean}</span><span class="ilbl">Clean</span></div>
+  </div>`;
+  document.getElementById('int-tbody').innerHTML=students.map((s,i)=>{
+    const r=integrityResults[i];
+    const aiC=r.aiFlag?`<span class="chip cai"><i class="fas fa-robot"></i> ${r.aiScore}%</span>`:'<span class="chip cok">Clear</span>';
+    const dupC=r.dupFlag?`<span class="chip cdup"><i class="fas fa-copy"></i> ${r.dupSim}% / ${r.dupMatch}</span>`:'<span class="chip cok">Unique</span>';
+    const st=(r.aiFlag||r.dupFlag)?'<span style="color:var(--red);font-weight:600">⚠ Flagged</span>':'<span style="color:var(--green);font-weight:600">✓ Clean</span>';
+    return `<tr><td style="font-weight:500">${s.name}</td><td style="color:var(--muted)">${s.matric||'—'}</td><td><span class="badge b${s.question.toLowerCase()}">${s.question}</span></td><td style="color:var(--muted)">${r.wordCount}</td><td>${aiC}</td><td>${dupC}</td><td>${st}</td></tr>`;
+  }).join('');
+}
+
+/* ════════════════════════════════════════════
+   RESULTS
+════════════════════════════════════════════ */
+function goToResults(){
+  let rows='',sum=0,passed=0,aiF=0,dupF=0;
+  students.forEach((s,i)=>{
+    const t=Math.round(getTotal(i)*10)/10,g=getGrade(t),p=t>=10,ir=integrityResults[i]||{};
+    sum+=t;if(p) passed++;if(ir.aiFlag) aiF++;if(ir.dupFlag) dupF++;
+    rows+=`<tr>
+      <td style="font-weight:500">${s.name}</td><td style="color:var(--muted)">${s.matric||'—'}</td>
+      <td><span class="badge b${s.question.toLowerCase()}">${s.question}</span></td>
+      <td style="font-weight:600">${t}</td><td><span class="gpill g${g}">${g}</span></td>
+      <td class="${p?'pass-t':'fail-t'}">${p?'Pass':'Fail'}</td>
+      <td>${ir.aiFlag?`<span class="chip cai"><i class="fas fa-robot"></i>${ir.aiScore}%</span>`:'<span class="chip cok">Clear</span>'}</td>
+      <td>${ir.dupFlag?`<span class="chip cdup">${ir.dupSim}%</span>`:'<span class="chip cok">Unique</span>'}</td>
+      <td><button class="btn" style="padding:3px 9px;font-size:11px" onclick="jumpTo(${i})">Edit</button></td>
+    </tr>`;
+  });
+  document.getElementById('res-tbody').innerHTML=rows;
+  const avg=students.length?Math.round(sum/students.length*10)/10:0;
+  document.getElementById('res-sub').textContent=`${students.length} students marked`;
+  document.getElementById('res-stats').innerHTML=`<div class="stat-grid">
+    <div class="scard"><span class="sval">${students.length}</span><span class="slbl">Students</span></div>
+    <div class="scard"><span class="sval">${avg}</span><span class="slbl">Average</span></div>
+    <div class="scard"><span class="sval" style="color:var(--green)">${passed}</span><span class="slbl">Passed</span></div>
+    <div class="scard"><span class="sval" style="color:var(--red)">${students.length-passed}</span><span class="slbl">Below 10</span></div>
+    <div class="scard"><span class="sval" style="color:var(--amber)">${aiF}</span><span class="slbl">AI flagged</span></div>
+    <div class="scard"><span class="sval" style="color:var(--orange)">${dupF}</span><span class="slbl">Duplicates</span></div>
+  </div>`;
+  showStep('step-results');
+}
+
+/* ════════════════════════════════════════════
+   EXPORT
+════════════════════════════════════════════ */
+function exportCSV(){
+  const ph=['Q1-PartA(2)','Q1-PartB(4)','Q1-PartC(4)','Q1-PartD(5)','Q1-PartE(3)','Q1-PartF(2)','Q2-a(4)','Q2-b(5)','Q2-c(6)','Q2-d(5)','Q3-a(5)','Q3-b(4)','Q3-c(7)','Q3-d(4)'];
+  const hd=['Name','Matric','Question','Total','Grade','Result','Words','AI Flag','AI Score%','Duplicate','Dup Match','Dup Sim%','Feedback',...ph];
+  const rows=students.map((s,i)=>{
+    const t=Math.round(getTotal(i)*10)/10,g=getGrade(t),ir=integrityResults[i]||{},sc=scores[i]||{};
+    return [`"${s.name}"`,`"${s.matric}"`,s.question,t,g,t>=10?'Pass':'Fail',ir.wordCount||0,ir.aiFlag?'YES':'NO',ir.aiScore||0,ir.dupFlag?'YES':'NO',`"${ir.dupMatch||''}"`,ir.dupSim||0,`"${(feedback[i]||'').replace(/"/g,'""')}"`,sc.pA||'',sc.pB||'',sc.pC||'',sc.pD||'',sc.pE||'',sc.pF||'',sc.q2a||'',sc.q2b||'',sc.q2c||'',sc.q2d||'',sc.q3a||'',sc.q3b||'',sc.q3c||'',sc.q3d||''].join(',');
+  });
+  const csv=[hd.join(','),...rows].join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='EDF423_Marked_Results.csv';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
+/* ════════════════════════════════════════════
+   CSV PARSING & INIT
+════════════════════════════════════════════ */
+function parseCSVLine(line){const r=[];let c='',q=false;for(let i=0;i<line.length;i++){const ch=line[i];if(ch==='"'){q=!q;continue;}if(ch===','&&!q){r.push(c.trim());c='';continue;}c+=ch;}r.push(c.trim());return r;}
+function parseCSV(text){const lines=text.trim().split('\n');if(lines.length<2) return [];const h=parseCSVLine(lines[0]);return lines.slice(1).filter(l=>l.trim()).map(l=>{const v=parseCSVLine(l),o={};h.forEach((k,i)=>o[k]=v[i]||'');return o;});}
+function findField(row,kws){for(const k of Object.keys(row)){if(kws.some(kw=>k.toLowerCase().includes(kw))) return row[k];}return '';}
+function longestField(row){return Object.values(row).reduce((a,b)=>b.length>a.length?b:a,'');}
+function detectQ(row){const t=Object.values(row).join(' ').toLowerCase();if(t.includes('emeka')||t.includes('self-efficacy')||t.includes('bandura')||t.includes('question 3')) return 'Q3';if(t.includes('operant')||t.includes('reinforcement')||t.includes('question 2')) return 'Q2';return 'Q1';}
+
+function processFile(file){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{const rows=parseCSV(e.target.result);if(!rows.length){showErr('No data rows found.');return;}students=rows.map((row,i)=>({name:findField(row,['name','student','full'])||`Student ${i+1}`,matric:findField(row,['matric','reg','number']),response:longestField(row),question:detectQ(row)}));initMarking();}
+    catch(e){showErr('Could not read the CSV.');}
+  };reader.readAsText(file);
+}
+function showErr(m){const el=document.getElementById('upload-error');el.textContent=m;el.style.display='block';}
+
+function loadSample(){
+  students=[
+    {name:'Adaeze Okonkwo',matric:'EDF/2021/045',question:'Q2',response:'I observed a behaviour problem at a secondary school in Lagos where students consistently refuse to submit their assignments on time. The behaviour is that students arrive to class on at least four out of five lesson days without their written work, offering excuses ranging from power outages to lost notes. This happens across all SS classes during morning periods. Using operant conditioning principles, I selected positive reinforcement as my primary technique because the ABC analysis shows that the antecedent is the assignment deadline, the behaviour is avoidance and non-submission, and the consequence is that the teacher shows frustration but no real cost falls on the student. Positive reinforcement works here because the current environment provides no reward for compliance. I would implement a merit board in the classroom where each timely submission earns a visible point. Students with five consecutive timely submissions receive a commendation letter sent home to their parents. This is meaningful in a Nigerian context because parental praise carries significant social weight among secondary school students in Lagos public schools. The implementation plan begins in week one with teacher introducing the board, week two with recording first submissions, and weekly review by the class counsellor. Regarding ethics, I must ensure that rewards do not create dependency or shame students who face genuine material obstacles such as lack of electricity at home. Informed consent from students and parents must be obtained before implementing any formal behaviour programme. A student without electricity at home should not be penalised for late submission under those circumstances.'},
+    {name:'Chukwuemeka Eze',matric:'EDF/2021/032',question:'Q3',response:"Emeka's situation is a clear illustration of Bandura's social learning theory applied in a Nigerian secondary school context. The models in Emeka's life have consistently demonstrated that academic effort does not lead to success. His three friends who dropped out and his older brother who failed WAEC twice are his most proximate and similar models. Bandura emphasised in his social learning theory that we learn more readily from models who are similar to us in age, gender, background, and perceived status. Emeka's brother is the most powerful model because he is a family member, a Nigerian male, someone who tried and failed in the same educational system. When Emeka tells his counsellor that even if he tries he will still fail, this directly reflects low self-efficacy as defined by Bandura. Self-efficacy is a task-specific belief about one's ability to succeed at a particular task. This is not general low confidence but a specific academic self-efficacy deficit shaped by vicarious experience of watching others fail. A counsellor must address self-efficacy first before any modelling intervention because without belief in the possibility of success, no amount of demonstration or observation will lead to performance. For the Acquisition phase of the modelling intervention, I would introduce a counter-model who is similar to Emeka in background, age, and social class but who succeeded academically. Bandura's factors of similarity, status, and clarity of demonstration must all be attended to during the acquisition phase. For the Performance phase, I would ensure vicarious reinforcement is clearly visible by having the model discuss the rewards they received. One limitation specific to Emeka's situation in a Nigerian school context is that suitable peer models who succeeded are often not physically accessible because they have moved on to university or relocated. I would adapt this plan by using recorded video testimonies from former students of similar backgrounds instead."},
+    {name:'Blessing Nwosu',matric:'EDF/2021/078',question:'Q1',response:'The behaviour I observed is among SS1 students at a public school in Surulere, Lagos. During morning assembly every weekday, approximately 65 to 70 percent of students in the junior secondary section engage in side conversations, laughter, and movement rather than paying attention to announcements, even when teachers are standing on the assembly stage. This happens for the full 15-minute duration of assembly, five days a week. Part B analysis: The antecedent is the beginning of assembly when students stand in their rows with minimal direct supervision from individual class teachers. The behaviour is sustained side talking and movement. The consequence is that the talking provides immediate social reward — laughter, peer bonding, and entertainment — and there is no consistent negative consequence because teachers monitoring the crowd rarely identify and sanction specific students. The behaviour keeps happening because it is positively reinforced by peer attention and social belonging with no competing consequence every single morning. Ogundele and Adeyemi (2019) in the Nigerian Journal of Educational Research found that unstructured group settings in secondary schools produce significantly higher rates of off-task social behaviours compared to structured classroom settings. This supports my ABC analysis because it confirms that the absence of clear behavioural structure is the key antecedent. Fareo (2012) found similar patterns in Kwara State secondary schools where morning assembly was identified as a high-risk period for disruptive behaviour. For Part D, I would use token economy and differential reinforcement of other behaviour. Token economy would award class points for orderly assembly participation, redeemable weekly for a class privilege such as an extra break period. One honest obstacle in a real Nigerian school is that teachers are often not present at assembly because they use the time to mark registers or prepare for their first lesson. I would therefore restructure the plan to make assembly monitoring a shared staff responsibility with a rotating teacher rota. This assignment taught me that behaviour modification in theory assumes consistent staff support that is simply not available in most Nigerian public schools.'},
+  ];
+  initMarking();
+}
+
+function initMarking(){
+  current=0;scores={};feedback={};autoResults={};
+  students.forEach((_,i)=>{scores[i]={};feedback[i]='';});
+  runIntegrity();renderIntegrityReport();showStep('step-integrity');
+}
+function showStep(id){
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('progress-pill').style.display=(id==='step-mark')?'block':'none';
+}
+
+document.getElementById('csv-input').addEventListener('change',e=>{if(e.target.files[0]) processFile(e.target.files[0]);});
+const dz=document.getElementById('drop-zone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-over');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag-over'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag-over');if(e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]);});
+</script>
+</body>
+</html>
